@@ -12,4 +12,7 @@ export class User extends Model {
 
   @Column
   displayName: string;
+
+  @Column
+  refreshToken: string;
 }

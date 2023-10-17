@@ -1,39 +1,32 @@
-import { Controller, Get, UseGuards, Req, Body, Post } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  UseGuards,
+  Req,
+  Body,
+  Post,
+  Query,
+} from '@nestjs/common';
 import { GoogleAuthGuard } from '../common/guards/Guards';
 import { Request } from 'express';
 import { ApiTags } from '@nestjs/swagger';
+import { AuthenticationService } from './authentication.service';
 
 @Controller('auth')
 @ApiTags('auth')
 export class AuthenticationController {
-  @Get('google/login')
+  private authService: AuthenticationService;
+
+  @Get('google/link')
   @UseGuards(GoogleAuthGuard)
-  handleLogin(@Body() body: any) {
-    return { msg: 'Google Authentication' };
+  handleLogin() {
+    return this.authService.generateAuthUrl();
   }
 
   // api/auth/google/redirect
   @Get('google/redirect')
   @UseGuards(GoogleAuthGuard)
-  handleRedirect(@Req() request: Request) {
-    return { msg: 'OK' };
-  }
-
-  @Get('status')
-  user(@Req() request: Request) {
-    if (request.user) {
-      return { msg: 'Authenticated' };
-    } else {
-      return { msg: 'Not Authenticated' };
-    }
-  }
-  @Post('token')
-  getToken(@Req() request: Request) {
-    if (request.user) {
-      // @ts-ignore
-      return request.user.accessToken;
-    } else {
-      return { msg: 'Not Authenticated' };
-    }
+  handleRedirect(@Query('code') code: string) {
+    return this.authService.setCredentials(code);
   }
 }

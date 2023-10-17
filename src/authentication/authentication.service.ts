@@ -1,30 +1,32 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { User } from 'src/db/models/user.model';
 import { UserDetails } from '../common/types';
-import { USER_REPOSITORY } from '../common/constants';
+import { CREDENTIALS, SCOPE, USER_REPOSITORY } from '../common/constants';
+import { google } from 'googleapis';
 
 @Injectable()
-export class AuthenticationService {
+export class AuthenticationService implements OnModuleInit {
+  private oauth2Client;
+
   constructor(
     @Inject(USER_REPOSITORY) private readonly userRepository: typeof User,
   ) {}
 
-  async validateUser(details: UserDetails) {
-    console.log('AuthService');
-    const user = await this.userRepository.findOne({
-      where: { email: details.email },
-    });
-    if (user) return user;
-    console.log('User not found. Creating...');
-    return await this.userRepository.create(details);
+  onModuleInit(): any {
+    this.oauth2Client = new google.auth.OAuth2(...CREDENTIALS);
   }
 
-  async findUser(email: string) {
-    return await this.userRepository.findOne({
-      where: {
-        email,
-      },
+  async generateAuthUrl() {
+    return this.oauth2Client.generateAuthUrl({
+      access_type: 'offline',
+      scope: SCOPE,
     });
+  }
+
+  async setCredentials(code) {
+    const authData = await this.oauth2Client.getToken(code);
+    console.log(authData);
+    this.oauth2Client.setCredentials(authData.tokens);
   }
 }

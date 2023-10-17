@@ -7,18 +7,6 @@ import * as process from 'process';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { cors: true });
-  app.use(
-    session({
-      secret: 'asiodasjoddjdoasddasoidjasiodasdjaiodd',
-      saveUninitialized: false,
-      resave: false,
-      cookie: {
-        maxAge: 60000,
-        secure: false,
-      },
-    }),
-  );
-
   app.enableCors({
     origin: process.env.FRONT_URL,
 
@@ -36,8 +24,6 @@ async function bootstrap() {
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api#', app, document);
-  app.use(passport.initialize());
-  app.use(passport.session());
   const host = '127.0.0.1';
   const port = 3000;
 
