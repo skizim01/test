@@ -1,11 +1,21 @@
-import { Table, Model, Column } from 'sequelize-typescript';
+import {
+  Table,
+  Model,
+  Column,
+  PrimaryKey,
+  HasOne,
+  HasMany,
+  BelongsTo,
+  DataType,
+} from 'sequelize-typescript';
+import { User } from './user.model';
 
 @Table({
   tableName: 'event',
 })
 export class Event extends Model {
-  @Column({ primaryKey: true, autoIncrement: true, unique: true })
-  id!: number;
+  @Column({ primaryKey: true })
+  id!: string;
 
   @Column
   title: string;
@@ -14,5 +24,12 @@ export class Event extends Model {
   start: Date;
 
   @Column
-  duration: number;
+  end: Date;
+
+  @BelongsTo(() => User, {
+    targetKey: 'email',
+    keyType: DataType.STRING,
+    foreignKey: 'email',
+  })
+  user: User;
 }

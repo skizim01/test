@@ -1,7 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import * as passport from 'passport';
-import * as session from 'express-session';
+import * as cookieParser from 'cookie-parser';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import * as process from 'process';
 
@@ -9,9 +8,6 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule, { cors: true });
   app.enableCors({
     origin: process.env.FRONT_URL,
-
-    // methods: ['GET', 'POST', 'PATCH'],
-
     credentials: true,
   });
 
@@ -23,9 +19,10 @@ async function bootstrap() {
     .addTag('Calendar')
     .build();
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api#', app, document);
+  SwaggerModule.setup('api/doc', app, document);
   const host = '127.0.0.1';
   const port = 3000;
+  app.use(cookieParser());
 
   console.log('host:port --', host, port);
 

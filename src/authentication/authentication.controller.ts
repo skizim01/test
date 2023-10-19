@@ -1,32 +1,31 @@
-import {
-  Controller,
-  Get,
-  UseGuards,
-  Req,
-  Body,
-  Post,
-  Query,
-} from '@nestjs/common';
-import { GoogleAuthGuard } from '../common/guards/Guards';
-import { Request } from 'express';
-import { ApiTags } from '@nestjs/swagger';
+import { Controller, Get, Query, Res } from '@nestjs/common';
+import { Response } from 'express';
+import { ApiProperty, ApiTags } from '@nestjs/swagger';
 import { AuthenticationService } from './authentication.service';
 
 @Controller('auth')
 @ApiTags('auth')
 export class AuthenticationController {
-  private authService: AuthenticationService;
+  constructor(private authService: AuthenticationService) {}
 
   @Get('google/link')
-  @UseGuards(GoogleAuthGuard)
-  handleLogin() {
-    return this.authService.generateAuthUrl();
+  @ApiProperty({ description: 'Отримання url для Google Oauth2' })
+  async handleLogin() {
+    const url = await this.authService.generateAuthUrl();
+    return { url };
   }
 
-  // api/auth/google/redirect
   @Get('google/redirect')
-  @UseGuards(GoogleAuthGuard)
-  handleRedirect(@Query('code') code: string) {
-    return this.authService.setCredentials(code);
+  async HandleRedirect(@Query('code') code: string, @Res() res: Response) {
+    res.json({ msg: 'OK' }).send();
+  }
+
+  @Get('google/redirect/true')
+  @ApiProperty({
+    description: 'Авторизація в системі та отримання access_token',
+  })
+  async trueHandleRedirect(@Query('code') code: string, @Res() res: Response) {
+    await this.authService.setCredentials(code, res);
+    res.json({ msg: 'OK' }).send();
   }
 }
